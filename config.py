@@ -14,7 +14,7 @@ def config_parser():
                         help='where to store ckpts and logs')
     
     # train options
-    parser.add_argument("--N_iters", type=int, default=300000,
+    parser.add_argument("--N_iters", type=int, default=30_000, # 100_000, # 300_000,
                         help='the number of sharp images one blur image corresponds to')
     parser.add_argument("--netdepth", type=int, default=8, 
                         help='layers in network')
@@ -106,7 +106,7 @@ def config_parser():
                         help='frequency of print tqdm')
     parser.add_argument("--i_print", type=int, default=1000, 
                         help='frequency of console printout and metric loggin')
-    parser.add_argument("--i_weights", type=int, default=10000, 
+    parser.add_argument("--i_weights", type=int, default=5000, # 10000, 
                         help='frequency of weight ckpt saving')
     parser.add_argument("--i_img", type=int, default=1000, 
                         help='frequency of tensorboard image logging')

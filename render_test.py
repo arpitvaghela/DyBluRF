@@ -111,6 +111,37 @@ def render_test():
             near = 0.
             far = 1.
         print('NEAR FAR', near, far)
+        
+    elif args.dataset_type == 'iphone_llff':
+        images, poses_start, bds, \
+        sharp_images, depths, \
+        masks, motion_coords, \
+        render_poses, ref_c2w = load_llff_data(args.datadir, args.start_frame, args.end_frame, 
+                                               target_idx=args.target_idx, recenter=True, 
+                                               bd_factor=.9, spherify=args.spherify, 
+                                               final_height=args.final_height,is_iphone=True)
+        hwf = poses_start[0, :3,- 1]
+        i_test = np.array([i for i in range(3, int(images.shape[0]), 4)])
+        i_val = [] 
+        i_train = np.array([i for i in np.arange(int(images.shape[0])) if
+                            (i not in i_test and i not in i_val)])
+        
+        poses_start = torch.Tensor(poses_start)
+        poses_end = poses_start
+        poses_start_se3 = SE3_to_se3_N(poses_start[:, :3, :4])
+        poses_end_se3 = poses_start_se3
+        poses_org = poses_start.repeat(args.deblur_images, 1, 1)
+        poses = poses_org[:, :, :4]
+
+        print('Loaded llff', images.shape, render_poses.shape, hwf, args.datadir)
+
+        print('DEFINING BOUNDS')
+        if args.no_ndc:
+            near = np.percentile(bds[:, 0], 5) * 0.8 #np.ndarray.min(bds) #* .9
+            far = np.percentile(bds[:, 1], 95) * 1.1 #np.ndarray.max(bds) #* 1.
+        else:
+            near = 0.
+            far = 1.
     else:
         print('ONLY SUPPORT LLFF!!!!!!!!')
         sys.exit()

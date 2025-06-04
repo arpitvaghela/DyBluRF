@@ -341,7 +341,7 @@ def create_nerf(args, poses_start_se3, poses_end_se3, num_frames):
     if args.N_importance > 0:
         render_kwargs_train['dynamic_model_fine'] = dynamic_model_fine
         render_kwargs_train['static_model_fine'] = static_model_fine
-    if args.dataset_type != 'llff' or args.no_ndc:
+    if args.dataset_type not in  ['llff', "iphone_llff"] or args.no_ndc:
         print('Not ndc!')
         render_kwargs_train['ndc'] = False
         render_kwargs_train['lindisp'] = args.lindisp

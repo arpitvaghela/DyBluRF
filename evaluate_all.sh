@@ -1,0 +1,12 @@
+python evaluation_iphone.py --config configs/iphone_blur_dataset/apple.txt >> results/apple.log
+python evaluation_iphone.py --config configs/iphone_blur_dataset/backpack.txt >> results/backpack.log
+python evaluation_iphone.py --config configs/iphone_blur_dataset/block.txt >> results/block.log
+python evaluation_iphone.py --config configs/iphone_blur_dataset/creeper.txt >> results/creeper.log
+python evaluation_iphone.py --config configs/iphone_blur_dataset/handwavy.txt >> results/handwavy.log
+python evaluation_iphone.py --config configs/iphone_blur_dataset/paper-windmill.txt >> results/paper-windmill.log
+python evaluation_iphone.py --config configs/iphone_blur_dataset/pillow.txt >> results/pillow.log
+python evaluation_iphone.py --config configs/iphone_blur_dataset/space-out.txt >> results/space-out.log
+python evaluation_iphone.py --config configs/iphone_blur_dataset/spin.txt >> results/spin.log
+python evaluation_iphone.py --config configs/iphone_blur_dataset/sriracha-tree.txt >> results/sriracha-tree.log
+python evaluation_iphone.py --config configs/iphone_blur_dataset/teddy.txt >> results/teddy.log
+python evaluation_iphone.py --config configs/iphone_blur_dataset/wheel.txt >> results/wheel.log

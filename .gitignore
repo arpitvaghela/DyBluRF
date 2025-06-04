@@ -21,3 +21,5 @@ models/weights/*
 # Other
 .DS_Store
 wandb
+
+logs

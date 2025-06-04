@@ -6,7 +6,7 @@ import cv2
 
 def imread(f):
     if f.endswith('png'):
-        return imageio.imread(f, ignoregamma=True)
+        return imageio.imread(f, apply_gamma=True)
     else:
         return imageio.imread(f)
     
@@ -311,7 +311,7 @@ def load_data_eva(basedir, start_frame, end_frame, factor=None, width=None,
 
 
 def load_llff_data(basedir, start_frame, end_frame, target_idx=10, recenter=True, 
-                   bd_factor=.75, spherify=False, final_height=288):
+                   bd_factor=.75, spherify=False, final_height=288, is_iphone=False):
     
     poses, bds, imgs, imgs_sharp, \
     disp, masks, motion_coords = load_data(basedir, start_frame, end_frame,
@@ -336,11 +336,14 @@ def load_llff_data(basedir, start_frame, end_frame, target_idx=10, recenter=True
         poses = recenter_poses(poses)
     if spherify:
         poses, render_poses, bds = spherify_poses(poses, bds)
-
-    poses = poses[::2, ...] # get camera poses from the left camera
+        
+    if not is_iphone:
+        poses = poses[::2, ...] # get camera poses from the left camera
+        
     poses = poses[start_frame:end_frame, ...]
     if poses.shape[0] != len(images):
-        print( 'Mismatch between imgs {} and poses {} !!!!'.format(len(images), poses.shape[-1]))
+        
+        print( 'Mismatch between imgs {} and poses {} !!!!'.format(len(images), poses.shape[0]))
         return
     
     c2w = poses[target_idx, :, :]

@@ -1,8 +1,8 @@
-expname = basketball
+expname = mochi-high-five
 basedir = ./logs
-datadir = /home/exouser/workspace/stereo_blur_dataset/basketball/dense
+datadir = /home/exouser/workspace/iphone_blur_dataset/mochi-high-five
 
-dataset_type = llff
+dataset_type = iphone_llff
 deblur_images = 7
 
 pose_lrate = 1e-4
@@ -28,6 +28,6 @@ w_sf_reg = 0.1
 w_prob_reg = 0.1
 
 start_frame = 0
-end_frame = 24
+end_frame = 72
 
 final_height = 288

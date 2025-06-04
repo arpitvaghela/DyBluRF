@@ -16,7 +16,7 @@ from render import *
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-np.random.seed(1)
+np.random.seed(100)
 
 
 def train():
@@ -57,6 +57,36 @@ def train():
             near = 0.
             far = 1.
         print('NEAR FAR', near, far)
+    elif args.dataset_type == 'iphone_llff':
+        images, poses_start, bds, \
+        sharp_images, depths, \
+        masks, motion_coords, \
+        render_poses, ref_c2w = load_llff_data(args.datadir, args.start_frame, args.end_frame, 
+                                               target_idx=args.target_idx, recenter=True, 
+                                               bd_factor=.9, spherify=args.spherify, 
+                                               final_height=args.final_height,is_iphone=True)
+        hwf = poses_start[0, :3,- 1]
+        i_test = np.array([i for i in range(3, int(images.shape[0]), 4)])
+        i_val = [] 
+        i_train = np.array([i for i in np.arange(int(images.shape[0])) if
+                            (i not in i_test and i not in i_val)])
+        
+        poses_start = torch.Tensor(poses_start)
+        poses_end = poses_start
+        poses_start_se3 = SE3_to_se3_N(poses_start[:, :3, :4])
+        poses_end_se3 = poses_start_se3
+        poses_org = poses_start.repeat(args.deblur_images, 1, 1)
+        poses = poses_org[:, :, :4]
+
+        print('Loaded llff', images.shape, render_poses.shape, hwf, args.datadir)
+
+        print('DEFINING BOUNDS')
+        if args.no_ndc:
+            near = np.percentile(bds[:, 0], 5) * 0.8 #np.ndarray.min(bds) #* .9
+            far = np.percentile(bds[:, 1], 95) * 1.1 #np.ndarray.max(bds) #* 1.
+        else:
+            near = 0.
+            far = 1.
     else:
         print('ONLY SUPPORT LLFF!!!!!!!!')
         sys.exit()
@@ -117,7 +147,7 @@ def train():
 
     for i in trange(start, N_iters):
         chain_bwd = 1 - chain_bwd
-        print('Random FROM SINGLE IMAGE')
+        # print('Random FROM SINGLE IMAGE')
         # Random from one image
         img_i = np.random.choice(i_train)
         if i % (decay_iteration * 1000) == 0:
@@ -155,7 +185,7 @@ def train():
         spline_poses = get_pose(args, img_i, render_kwargs_train['se3']) #[deblur_images,3,4]
         ray_idx = torch.randperm(H * W)[:args.N_rand // args.deblur_images]
         if args.use_motion_mask and i < decay_iteration * 1000:
-            print('HARD MINING STAGE !')
+            # print('HARD MINING STAGE !')
             num_extra_sample = args.num_extra_sample // args.deblur_images
             dy_ray_idx = dy_coords[:, 0] * W + dy_coords[:, 1]
             select_inds_hard = np.random.choice(dy_ray_idx.shape[0], 
@@ -337,17 +367,17 @@ def train():
         else:
             w_of = args.w_optical_flow
         
-        print('w_depth ', w_depth, 'w_of ', w_of)
+        # print('w_depth ', w_depth, 'w_of ', w_of)
 
         depth_loss = w_depth * compute_depth_loss(depth_map_dy_blur, -target_depth)
         
         gradient_loss = args.w_gradient * compute_gradient_loss(depth_blur, -target_depth)
 
         if img_i == 0:
-            print('only fwd flow')
+            # print('only fwd flow')
             flow_loss = w_of * compute_mae(render_of_fwd_blur, target_of_fwd, target_fwd_mask)
         elif img_i == num_img - 1:
-            print('only bwd flow')
+            # print('only bwd flow')
             flow_loss = w_of * compute_mae(render_of_bwd_blur, target_of_bwd, target_bwd_mask)
         else:
             flow_loss = w_of * compute_mae(render_of_fwd_blur, target_of_fwd, target_fwd_mask)
@@ -415,17 +445,17 @@ def train():
         loss = sf_reg_loss + sf_cycle_loss + render_loss + flow_loss + \
                sf_sm_loss + prob_reg_loss + depth_loss + entropy_loss + \
                gradient_loss + pose_loss + empty_loss
-        print('render_loss ', render_loss.item(), 
-              ' bidirection_loss ', sf_cycle_loss.item(), 
-              ' sf_reg_loss ', sf_reg_loss.item())
-        print('depth_loss ', depth_loss.item(), 
-              ' flow_loss ', flow_loss.item(), 
-              ' sf_sm_loss ', sf_sm_loss.item())
-        print('prob_reg_loss ', prob_reg_loss.item(),
-              ' entropy_loss ', entropy_loss.item(), 
-              ' gradient_loss ', gradient_loss.item())
-        print('pose_loss ', pose_loss.item(), 
-              'empty_loss', empty_loss.item())
+        # print('render_loss ', render_loss.item(), 
+        #       ' bidirection_loss ', sf_cycle_loss.item(), 
+        #       ' sf_reg_loss ', sf_reg_loss.item())
+        # print('depth_loss ', depth_loss.item(), 
+        #       ' flow_loss ', flow_loss.item(), 
+        #       ' sf_sm_loss ', sf_sm_loss.item())
+        # print('prob_reg_loss ', prob_reg_loss.item(),
+        #       ' entropy_loss ', entropy_loss.item(), 
+        #       ' gradient_loss ', gradient_loss.item())
+        # print('pose_loss ', pose_loss.item(), 
+        #       'empty_loss', empty_loss.item())
         
         loss.backward()
         optimizer.step()
